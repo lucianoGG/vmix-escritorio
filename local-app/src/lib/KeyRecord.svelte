@@ -171,9 +171,9 @@
         on:click={recording ? stopRecording : startRecording}
     >
         {#if recording}
-            <span>recording</span>
+            <span>gravando</span>
         {:else}
-            <span>record</span>
+            <span>gravar</span>
         {/if}
     </div>
 </div>

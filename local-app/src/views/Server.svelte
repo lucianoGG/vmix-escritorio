@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onDestroy, onMount } from "svelte";
+  import { onDestroy } from "svelte";
   import { useParams } from "svelte-navigator";
 
   import { selectServer, servers } from "~/store";
@@ -7,9 +7,16 @@
 
   const params = useParams();
 
-  params.subscribe((_params) => {
-    selectServer(_params.id);
-  });
+  /** Evita vários loadURL seguidos (subscribe dispara várias vezes) → ERR_ABORTED no Electron. */
+  let lastLoadedServerId: string | undefined;
+
+  $: {
+    const id = $params?.id;
+    if (id && id !== lastLoadedServerId) {
+      lastLoadedServerId = id;
+      void selectServer(id).catch((e) => console.error("selectServer:", e));
+    }
+  }
 
   onDestroy(async () => {
     await api.showLocalApp();

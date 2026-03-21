@@ -18,4 +18,5 @@ export type WorkAdventureDesktopApi = {
     onMuteToggle: (callback: () => void) => void;
     onCameraToggle: (callback: () => void) => void;
     getDesktopCapturerSources: (options: SourcesOptions) => Promise<DesktopCapturerSource[]>;
+    selectDesktopSource: () => Promise<string | null>;
 };

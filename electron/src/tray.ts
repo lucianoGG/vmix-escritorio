@@ -5,7 +5,7 @@ import { showAboutWindow } from "electron-util";
 import * as autoUpdater from "./auto-updater";
 import { APP_DISPLAY_NAME } from "./branding";
 import * as log from "./log";
-import { getAppView, getWindow } from "./window";
+import { confirmQuit, getAppView, getWindow } from "./window";
 
 let tray: Tray | undefined;
 
@@ -22,7 +22,7 @@ export function createTray() {
     const trayContextMenu = Menu.buildFromTemplate([
         {
             id: "open",
-            label: "Show / Hide",
+            label: "Mostrar / ocultar",
             click() {
                 const mainWindow = getWindow();
                 if (!mainWindow) {
@@ -37,26 +37,26 @@ export function createTray() {
             },
         },
         {
-            label: "Check for updates",
+            label: "Verificar atualizações",
             click() {
                 void autoUpdater.manualRequestUpdateCheck();
             },
         },
         {
-            label: "Open Logs",
+            label: "Abrir logs",
             click() {
                 void log.openLog();
             },
         },
         {
-            label: "Open DevTools",
+            label: "Abrir DevTools",
             click() {
                 getWindow()?.webContents.openDevTools({ mode: "detach" });
                 getAppView()?.webContents.openDevTools({ mode: "detach" });
             },
         },
         {
-            label: "About",
+            label: "Sobre",
             click() {
                 showAboutWindow({
                     icon: path.join(assetsDirectory, "icons", "logo.png"),
@@ -65,9 +65,9 @@ export function createTray() {
             },
         },
         {
-            label: "Quit",
+            label: "Sair",
             click() {
-                // app.confirmedExitPrompt = true;
+                confirmQuit();
                 app.quit();
             },
         },

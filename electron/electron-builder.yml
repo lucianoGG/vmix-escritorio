@@ -1,6 +1,6 @@
 appId: re.workadventu.desktop
 
-productName: Escritorio Vmix
+productName: Escritório Vmix
 
 files:
     - "dist/**/*"
@@ -28,6 +28,6 @@ win:
 
 publish:
     provider: github
-    owner: thecodingmachine
-    repo: workadventure
+    owner: lucianoGG
+    repo: vmix-escritorio
     releaseType: release

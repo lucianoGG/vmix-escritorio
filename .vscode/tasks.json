@@ -1,0 +1,88 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "electron: build",
+            "type": "shell",
+            "command": "yarn build",
+            "options": {
+                "cwd": "${workspaceFolder}/electron",
+                "env": {}
+            },
+            "group": {
+                "kind": "build",
+                "isDefault": false
+            },
+            "presentation": {
+                "reveal": "silent",
+                "panel": "shared"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "electron: build (source maps)",
+            "type": "shell",
+            "command": "yarn build -- --sourcemap",
+            "options": {
+                "cwd": "${workspaceFolder}/electron"
+            },
+            "group": "build",
+            "presentation": {
+                "reveal": "silent",
+                "panel": "shared"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "local-app: build",
+            "type": "shell",
+            "command": "yarn build",
+            "options": {
+                "cwd": "${workspaceFolder}/local-app"
+            },
+            "group": "build",
+            "presentation": {
+                "reveal": "silent",
+                "panel": "shared"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "electron + local-app: build",
+            "dependsOn": ["local-app: build", "electron: build"],
+            "dependsOrder": "sequence",
+            "group": "build",
+            "problemMatcher": []
+        },
+        {
+            "label": "local-app: dev (servidor :3000)",
+            "dependsOn": ["electron: build"],
+            "dependsOrder": "sequence",
+            "type": "shell",
+            "command": "yarn dev",
+            "options": {
+                "cwd": "${workspaceFolder}/local-app"
+            },
+            "isBackground": true,
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated",
+                "focus": false
+            },
+            "problemMatcher": {
+                "owner": "vite",
+                "pattern": {
+                    "regexp": ".",
+                    "file": 1,
+                    "location": 1,
+                    "message": 1
+                },
+                "background": {
+                    "activeOnStart": true,
+                    "beginsPattern": ".",
+                    "endsPattern": ".*(localhost:3000|127\\.0\\.0\\.1:3000|:3000/).*"
+                }
+            }
+        }
+    ]
+}

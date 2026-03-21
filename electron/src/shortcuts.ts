@@ -1,6 +1,8 @@
 import { globalShortcut } from "electron";
-import settings, { SettingsData } from "./settings";
+
+import { registerDevToolsGlobalShortcuts } from "./devtools";
 import { emitCameraToggle, emitMuteToggle } from "./ipc";
+import settings, { SettingsData } from "./settings";
 
 export function setShortcutsEnabled(enabled: boolean) {
     if (enabled) {
@@ -26,6 +28,8 @@ export function loadShortcuts() {
             emitCameraToggle();
         });
     }
+
+    registerDevToolsGlobalShortcuts();
 }
 
 export function saveShortcut(shortcut: keyof SettingsData["shortcuts"], key: string) {

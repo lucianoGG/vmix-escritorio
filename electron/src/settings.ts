@@ -16,9 +16,9 @@ const defaultSettings: SettingsData = {
     auto_launch_enabled: true,
     servers: [
         {
-            _id: `${Date.now()}-1`,
-            name: "Escritorio Vmix",
-            url: "http://escritorio.vmix.chat/",
+            _id: "1",
+            name: "Escritório Vmix",
+            url: "https://escritorio.vmix.chat/",
         },
     ],
     shortcuts: {

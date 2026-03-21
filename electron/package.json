@@ -33,6 +33,7 @@
     },
     "devDependencies": {
         "@types/auto-launch": "^5.0.2",
+        "@types/minimatch": "^5.1.2",
         "@typescript-eslint/eslint-plugin": "^5.18.0",
         "@typescript-eslint/parser": "^5.18.0",
         "electron": "^18.0.3",

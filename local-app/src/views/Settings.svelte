@@ -32,14 +32,14 @@
 </script>
 
 <div class="flex flex-col w-full h-full justify-center items-center">
-    <h1 class="text-gray-200 text-2xl mb-6">Settings</h1>
+    <h1 class="text-gray-200 text-2xl mb-6">Configurações</h1>
 
     <div class="flex flex-col justify-start max-w-148">
         {#if $settings}
             <InputField
-                id="toggle-camera"
-                title="Toggle Mute"
-                description="Set a shortcut to turn your microphone on and off"
+                id="toggle-mute"
+                title="Silenciar microfone"
+                description="Defina um atalho para ligar e desligar o microfone"
             >
                 <KeyRecord
                     id="toggle-mute"
@@ -50,8 +50,8 @@
 
             <InputField
                 id="toggle-camera"
-                title="Toggle Camera"
-                description="Set a shortcut to turn your camera on and off"
+                title="Ligar/desligar câmera"
+                description="Defina um atalho para ligar e desligar a câmera"
             >
                 <KeyRecord
                     id="toggle-camera"
@@ -60,16 +60,18 @@
                 />
             </InputField>
 
-            <InputField id="toggle-autostart" title="Toggle autostart">
+            <InputField id="toggle-autostart" title="Inicialização automática">
                 <ToggleSwitch
-                id="toggle-autostart"
-                value={$settings.auto_launch_enabled}
-                title="Autostart WorkAdventure after your PC started"
-                on:change={(e) => saveAutoLaunch(e.detail)}
+                    id="toggle-autostart"
+                    value={$settings.auto_launch_enabled}
+                    title="Abrir o “Escritório Vmix” automaticamente ao ligar o computador"
+                    on:change={(e) => saveAutoLaunch(e.detail)}
                 />
             </InputField>
 
-            <span class="mt-8 text-xs text-gray-200 max-w-128">Hint: Shortcuts are disabled while seeing this page</span>
-            {/if}
+            <span class="mt-8 text-xs text-gray-200 max-w-128">
+                Dica: os atalhos ficam desativados enquanto esta página estiver aberta.
+            </span>
+        {/if}
     </div>
 </div>

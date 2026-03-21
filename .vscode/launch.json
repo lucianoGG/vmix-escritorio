@@ -1,0 +1,104 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Electron: app:// (sem localhost — WA em settings.ts)",
+            "type": "node",
+            "request": "launch",
+            "cwd": "${workspaceFolder}/electron",
+            "runtimeExecutable": "${workspaceFolder}/electron/node_modules/.bin/electron",
+            "windows": {
+                "runtimeExecutable": "${workspaceFolder}/electron/node_modules/.bin/electron.cmd"
+            },
+            "args": ["dist/main.js"],
+            "outputCapture": "std",
+            "console": "integratedTerminal",
+            "preLaunchTask": "electron + local-app: build",
+            "env": {
+                "LOCAL_APP_URL": ""
+            },
+            "sourceMaps": true,
+            "outFiles": ["${workspaceFolder}/electron/dist/**/*.js"],
+            "resolveSourceMapLocations": [
+                "${workspaceFolder}/electron/**",
+                "!**/node_modules/**"
+            ]
+        },
+        {
+            "name": "Electron + Vite (sobe o servidor :3000 e depura)",
+            "type": "node",
+            "request": "launch",
+            "cwd": "${workspaceFolder}/electron",
+            "runtimeExecutable": "${workspaceFolder}/electron/node_modules/.bin/electron",
+            "windows": {
+                "runtimeExecutable": "${workspaceFolder}/electron/node_modules/.bin/electron.cmd"
+            },
+            "args": ["dist/main.js"],
+            "outputCapture": "std",
+            "console": "integratedTerminal",
+            "preLaunchTask": "local-app: dev (servidor :3000)",
+            "env": {
+                "LOCAL_APP_URL": "http://localhost:3000/"
+            },
+            "sourceMaps": true,
+            "outFiles": ["${workspaceFolder}/electron/dist/**/*.js"],
+            "resolveSourceMapLocations": [
+                "${workspaceFolder}/electron/**",
+                "!**/node_modules/**"
+            ]
+        },
+        {
+            "name": "Electron: Vite manual (só build; você roda `yarn dev` no local-app)",
+            "type": "node",
+            "request": "launch",
+            "cwd": "${workspaceFolder}/electron",
+            "runtimeExecutable": "${workspaceFolder}/electron/node_modules/.bin/electron",
+            "windows": {
+                "runtimeExecutable": "${workspaceFolder}/electron/node_modules/.bin/electron.cmd"
+            },
+            "args": ["dist/main.js"],
+            "outputCapture": "std",
+            "console": "integratedTerminal",
+            "preLaunchTask": "electron: build",
+            "env": {
+                "LOCAL_APP_URL": "http://localhost:3000/"
+            },
+            "sourceMaps": true,
+            "outFiles": ["${workspaceFolder}/electron/dist/**/*.js"],
+            "resolveSourceMapLocations": [
+                "${workspaceFolder}/electron/**",
+                "!**/node_modules/**"
+            ]
+        },
+        {
+            "name": "Electron: processo principal (sem build automático)",
+            "type": "node",
+            "request": "launch",
+            "cwd": "${workspaceFolder}/electron",
+            "runtimeExecutable": "${workspaceFolder}/electron/node_modules/.bin/electron",
+            "windows": {
+                "runtimeExecutable": "${workspaceFolder}/electron/node_modules/.bin/electron.cmd"
+            },
+            "args": ["dist/main.js"],
+            "outputCapture": "std",
+            "console": "integratedTerminal",
+            "sourceMaps": true,
+            "outFiles": ["${workspaceFolder}/electron/dist/**/*.js"]
+        },
+        {
+            "name": "Electron: depuração remota (porta 9229)",
+            "type": "node",
+            "request": "launch",
+            "cwd": "${workspaceFolder}/electron",
+            "runtimeExecutable": "${workspaceFolder}/electron/node_modules/.bin/electron",
+            "windows": {
+                "runtimeExecutable": "${workspaceFolder}/electron/node_modules/.bin/electron.cmd"
+            },
+            "runtimeArgs": ["--inspect=9229"],
+            "args": ["dist/main.js"],
+            "outputCapture": "std",
+            "console": "integratedTerminal",
+            "preLaunchTask": "electron: build"
+        }
+    ]
+}

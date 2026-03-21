@@ -1,7 +1,8 @@
 import { app, dialog } from "electron";
-import { autoUpdater } from "electron-updater";
+import electronIsDev from "electron-is-dev";
 import log from "electron-log";
-import * as isDev from "electron-is-dev";
+import { autoUpdater } from "electron-updater";
+import type { UpdateDownloadedEvent } from "electron-updater";
 import * as util from "util";
 
 import { APP_DISPLAY_NAME } from "./branding";
@@ -17,22 +18,30 @@ export async function checkForUpdates() {
         return;
     }
 
-    // Don't do auto-updates in development
-    if (isDev) {
+    if (electronIsDev) {
         return;
     }
 
-    // check for updates right away
-    await autoUpdater.checkForUpdates();
-
-    isCheckPending = false;
+    isCheckPending = true;
+    try {
+        await autoUpdater.checkForUpdates();
+    } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err);
+        if (msg.includes("No published versions") || msg.includes("ENOENT")) {
+            log.debug("[vmix] Sem releases publicados no GitHub; ignorando verificação de atualizações.");
+            return;
+        }
+        log.warn("[vmix] Erro ao verificar atualizações:", err);
+    } finally {
+        isCheckPending = false;
+    }
 }
 
 export async function manualRequestUpdateCheck() {
     isManualRequestedUpdate = true;
 
     createAndShowNotification({
-        body: "Checking for updates ...",
+        body: "Verificando atualizações ...",
     });
 
     await checkForUpdates();
@@ -42,32 +51,33 @@ export async function manualRequestUpdateCheck() {
 async function init() {
     autoUpdater.logger = log;
 
-    autoUpdater.on(
-        "update-downloaded",
-        ({ releaseNotes, releaseName }: { releaseNotes: string; releaseName: string }) => {
-            void (async () => {
-                const dialogOpts = {
-                    type: "question",
-                    buttons: ["Install and Restart", "Install Later"],
-                    defaultId: 0,
-                    title: `${APP_DISPLAY_NAME} - Update`,
-                    message: process.platform === "win32" ? releaseNotes : releaseName,
-                    detail: "A new version has been downloaded. Restart the application to apply the updates.",
-                };
+    autoUpdater.on("update-downloaded", (info: UpdateDownloadedEvent) => {
+        void (async () => {
+            const notesText =
+                typeof info.releaseNotes === "string"
+                    ? info.releaseNotes
+                    : Array.isArray(info.releaseNotes)
+                        ? info.releaseNotes
+                            .map((n) => (typeof n === "string" ? n : `${n.version}: ${n.note ?? ""}`))
+                            .join("\n")
+                        : "";
+            const dialogOpts = {
+                type: "question" as const,
+                buttons: ["Instalar e reiniciar", "Instalar depois"],
+                defaultId: 0,
+                title: `${APP_DISPLAY_NAME} — Atualização`,
+                message: notesText || info.releaseName || `Versão ${info.version}`,
+                detail: "Uma nova versão foi descarregada. Reinicie a aplicação para aplicar a atualização.",
+            };
 
-                const { response } = await dialog.showMessageBox(dialogOpts);
-                if (response === 0) {
-                    await sleep(1000);
-
-                    autoUpdater.quitAndInstall();
-
-                    // Force app to quit. This is just a workaround, ideally autoUpdater.quitAndInstall() should relaunch the app.
-                    // app.confirmedExitPrompt = true;
-                    app.quit();
-                }
-            })();
-        }
-    );
+            const { response } = await dialog.showMessageBox(dialogOpts);
+            if (response === 0) {
+                await sleep(1000);
+                autoUpdater.quitAndInstall();
+                app.quit();
+            }
+        })();
+    });
 
     if (process.platform === "linux" && !process.env.APPIMAGE) {
         autoUpdater.autoDownload = false;
@@ -75,8 +85,8 @@ async function init() {
 
         autoUpdater.on("update-available", () => {
             createAndShowNotification({
-                title: `${APP_DISPLAY_NAME} - Update available`,
-                body: "Please go to our website and install the newest version",
+                title: `${APP_DISPLAY_NAME} - Atualização disponível`,
+                body: "Por favor, acesse nosso site e instale a versão mais recente",
             });
         });
     }
@@ -84,15 +94,16 @@ async function init() {
     autoUpdater.on("update-not-available", () => {
         if (isManualRequestedUpdate) {
             createAndShowNotification({
-                body: "No update available.",
+                body: "Nenhuma atualização disponível.",
             });
         }
     });
 
     await checkForUpdates();
 
-    // run update check every hour again
-    setInterval(() => checkForUpdates, 1000 * 60 * 1);
+    setInterval(() => {
+        void checkForUpdates();
+    }, 1000 * 60 * 60);
 }
 
 export default {

@@ -6,7 +6,6 @@
     import { api } from "~/lib/ipc";
 
     const Home = () => import("~/views/Home.svelte");
-    const AddServer = () => import("~/views/AddServer.svelte");
     const Settings = () => import("~/views/Settings.svelte");
     const Server = () => import("~/views/Server.svelte");
 
@@ -18,7 +17,6 @@
         <Sidebar />
         <main class="flex flex-grow">
             <LazyRoute path="/" component={Home} delayMs={500}>Loading ...</LazyRoute>
-            <LazyRoute path="/server/add" component={AddServer} delayMs={500}>Loading ...</LazyRoute>
             <LazyRoute path="/settings" component={Settings} delayMs={500}>Loading ...</LazyRoute>
             <LazyRoute path="/server/:id" component={Server} delayMs={500}>Loading ...</LazyRoute>
             <Route>
