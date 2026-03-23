@@ -9,6 +9,7 @@ files:
       to: "local-app/dist"
 
 directories:
+    buildResources: ./resources
     output: ./build
 
 dmg:
@@ -19,11 +20,15 @@ mac:
     executableName: Escritorio Vmix
     hardenedRuntime: true
     gatekeeperAssess: false
-    entitlements: build/entitlements.mac.plist
-    entitlementsInherit: build/entitlements.mac.plist
+    entitlements: resources/entitlements.mac.plist
+    entitlementsInherit: resources/entitlements.mac.plist
     extendInfo:
         NSMicrophoneUsageDescription: "O Vmix precisa do microfone para chamadas de voz."
         NSCameraUsageDescription: "O Vmix precisa da câmera para chamadas de vídeo."
+        NSDesktopFolderUsageDescription: "O Vmix precisa do diretório de trabalho para compartilhar tela."
+    artifactName: "${productName}-${version}-${arch}.${ext}"
+
+afterSign: scripts/notarize.js
 
 linux:
     category: "Office"

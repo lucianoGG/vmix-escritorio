@@ -12,6 +12,7 @@
         "dev:local-app": "cd ../local-app && yarn && yarn dev",
         "build:icon": "node scripts/build-icon.js",
         "bundle": "yarn build:icon && yarn build:local-app && yarn build && electron-builder install-app-deps && electron-builder",
+        "bundle:mac": "yarn build:icon && yarn build:local-app && yarn build && electron-builder --mac",
         "typecheck": "tsc --noEmit",
         "test": "exit 0",
         "lint": "yarn eslint src/ . --ext .ts",
@@ -32,6 +33,7 @@
         "node-fetch": "^3.2.10"
     },
     "devDependencies": {
+        "@electron/notarize": "^3.1.1",
         "@types/auto-launch": "^5.0.2",
         "@types/minimatch": "^5.1.2",
         "@typescript-eslint/eslint-plugin": "^5.18.0",
