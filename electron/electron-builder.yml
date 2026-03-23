@@ -17,6 +17,7 @@ dmg:
 
 mac:
     category: public.app-category.business
+    icon: resources/icon.icns
     executableName: Escritorio Vmix
     hardenedRuntime: true
     gatekeeperAssess: false
