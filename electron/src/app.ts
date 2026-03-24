@@ -7,10 +7,17 @@ import { updateAutoLaunch } from "./auto-launch";
 import ipc from "./ipc";
 import settings from "./settings";
 import { setLogLevel } from "./log";
+import { APP_DISPLAY_NAME } from "./branding";
 import "./serve"; // prepare custom url scheme
 import { loadShortcuts } from "./shortcuts";
 
 async function init() {
+    // Garante o nome correto do app nas integrações do sistema (notificações, etc).
+    app.setName(APP_DISPLAY_NAME);
+    if (process.platform === "win32") {
+        app.setAppUserModelId("re.workadventu.desktop");
+    }
+
     const appLock = app.requestSingleInstanceLock();
 
     if (!appLock) {
