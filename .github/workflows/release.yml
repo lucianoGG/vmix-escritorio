@@ -1,0 +1,121 @@
+name: Release Desktop
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  build-macos:
+    name: Build macOS (signed/notarized)
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: yarn
+          cache-dependency-path: |
+            electron/yarn.lock
+            local-app/yarn.lock
+
+      - name: Install local-app dependencies
+        working-directory: local-app
+        run: yarn --frozen-lockfile
+
+      - name: Install electron dependencies
+        working-directory: electron
+        run: yarn --frozen-lockfile
+
+      - name: Build and publish macOS artifacts
+        working-directory: electron
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          # Signing (required for external distribution)
+          CSC_LINK: ${{ secrets.CSC_LINK }}
+          CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
+          CSC_NAME: ${{ secrets.CSC_NAME }}
+          # Notarization (used by scripts/notarize.js)
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+          yarn build:icon
+          yarn build:local-app
+          yarn build
+          npx electron-builder --mac --publish always
+
+  build-windows:
+    name: Build Windows
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: yarn
+          cache-dependency-path: |
+            electron/yarn.lock
+            local-app/yarn.lock
+
+      - name: Install local-app dependencies
+        working-directory: local-app
+        run: yarn --frozen-lockfile
+
+      - name: Install electron dependencies
+        working-directory: electron
+        run: yarn --frozen-lockfile
+
+      - name: Build and publish Windows artifacts
+        working-directory: electron
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        run: |
+          yarn build:icon
+          yarn build:local-app
+          yarn build
+          npx electron-builder --win --publish always
+
+  build-linux:
+    name: Build Linux
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: yarn
+          cache-dependency-path: |
+            electron/yarn.lock
+            local-app/yarn.lock
+
+      - name: Install local-app dependencies
+        working-directory: local-app
+        run: yarn --frozen-lockfile
+
+      - name: Install electron dependencies
+        working-directory: electron
+        run: yarn --frozen-lockfile
+
+      - name: Build and publish Linux artifacts
+        working-directory: electron
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        run: |
+          yarn build:icon
+          yarn build:local-app
+          yarn build
+          npx electron-builder --linux AppImage deb --publish always
