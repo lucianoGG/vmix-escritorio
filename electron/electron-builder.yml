@@ -16,6 +16,10 @@ dmg:
     icon: false
 
 mac:
+    target:
+        - dmg
+        - zip
+        - pkg
     category: public.app-category.business
     icon: resources/icon.icns
     executableName: Escritorio Vmix
