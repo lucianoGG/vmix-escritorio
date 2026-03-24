@@ -2,7 +2,11 @@
     "name": "workadventure-desktop",
     "version": "1.0.0",
     "description": "Desktop application for WorkAdventure",
-    "author": "thecodingmachine",
+    "author": {
+        "name": "Rafael Machado",
+        "email": "rfm@franet.com.br"
+    },
+    "homepage": "https://github.com/lucianoGG/vmix-escritorio",
     "main": "dist/main.js",
     "license": "SEE LICENSE IN LICENSE.txt",
     "scripts": {

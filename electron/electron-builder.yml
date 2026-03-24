@@ -34,6 +34,7 @@ afterSign: scripts/notarize.js
 linux:
     category: "Office"
     packageCategory: "Office"
+    maintainer: "Rafael Machado <rfm@franet.com.br>"
     icon: "assets/icons/logo.icns"
     target:
         - AppImage
