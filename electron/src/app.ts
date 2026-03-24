@@ -1,4 +1,4 @@
-import { app, BrowserWindow, globalShortcut } from "electron";
+import { app, BrowserWindow, globalShortcut, systemPreferences } from "electron";
 
 import { createWindow, getWindow } from "./window";
 import { createTray } from "./tray";
@@ -44,6 +44,14 @@ async function init() {
 
     // This method will be called when Electron has finished loading
     await app.whenReady().then(async () => {
+        if (process.platform === "darwin") {
+            const micStatus = systemPreferences.getMediaAccessStatus("microphone");
+            if (micStatus !== "granted") {
+                // Forca o prompt no macOS quando ainda nao houve decisao do utilizador.
+                await systemPreferences.askForMediaAccess("microphone");
+            }
+        }
+
         await settings.init();
 
         setLogLevel(settings.get("log_level") || "info");
