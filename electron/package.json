@@ -1,7 +1,7 @@
 {
-    "name": "workadventure-desktop",
-    "version": "1.0.4",
-    "description": "Desktop application for WorkAdventure",
+    "name": "vmix-escritorio-desktop",
+    "version": "1.0.5",
+    "description": "Desktop application for Escritório Vmix",
     "author": {
         "name": "Rafael Machado",
         "email": "rfm@franet.com.br"

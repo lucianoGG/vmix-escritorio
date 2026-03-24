@@ -7,7 +7,7 @@ export interface SourcesOptions {
 export interface DesktopCapturerSource {
     id: string;
     name: string;
-    thumbnailURL: string;
+    thumbnailDataURL: string;
 }
 
 export type WorkAdventureDesktopApi = {
