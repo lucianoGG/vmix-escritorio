@@ -37,7 +37,7 @@ jobs:
       - name: Build and publish macOS artifacts
         working-directory: electron
         env:
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # Signing (required for external distribution)
           CSC_LINK: ${{ secrets.CSC_LINK }}
           CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
@@ -79,7 +79,7 @@ jobs:
       - name: Build and publish Windows artifacts
         working-directory: electron
         env:
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           yarn build:icon
           yarn build:local-app
@@ -113,7 +113,7 @@ jobs:
       - name: Build and publish Linux artifacts
         working-directory: electron
         env:
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           yarn build:icon
           yarn build:local-app
