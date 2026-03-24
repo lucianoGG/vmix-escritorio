@@ -230,18 +230,14 @@ function registerIpcHandlers(): void {
     });
 }
 function resizeAppView(): void {
-    setTimeout(() => {
-        if (!mainWindow || !appView) return;
-
-        const { width, height } = mainWindow.getBounds();
-
-        appView.setBounds({
-            x: sidebarWidth,
-            y: 0,
-            width: width - sidebarWidth,
-            height: height,
-        });
-    });
+    if (!mainWindow || !appView) {
+        return;
+    }
+    // Área de cliente (sem moldura). getBounds() inclui moldura e erra no macOS.
+    const [cw, ch] = mainWindow.getContentSize();
+    const width = Math.max(1, cw - sidebarWidth);
+    const height = Math.max(1, ch);
+    appView.setBounds({ x: sidebarWidth, y: 0, width, height });
 }
 
 export async function createWindow() {
@@ -261,6 +257,7 @@ export async function createWindow() {
         y: windowState.y,
         width: windowState.width,
         height: windowState.height,
+        backgroundColor: "#30343d",
         autoHideMenuBar: true,
         show: false,
         webPreferences: {
@@ -309,12 +306,20 @@ export async function createWindow() {
         },
     });
 
-    resizeAppView();
-    appView.setAutoResize({ width: true, height: true });
     mainWindow.on("resize", resizeAppView);
+    mainWindow.on("resized", resizeAppView);
+    mainWindow.on("maximize", resizeAppView);
+    mainWindow.on("unmaximize", resizeAppView);
 
     mainWindow.once("ready-to-show", () => {
+        resizeAppView();
         mainWindow?.show();
+    });
+
+    mainWindow.on("show", resizeAppView);
+
+    appView.webContents.on("did-finish-load", () => {
+        resizeAppView();
     });
 
     mainWindow.webContents.on("did-finish-load", () => {
@@ -345,10 +350,19 @@ export async function showAppView(url?: string) {
     if (!appView) throw new Error("App view not found");
     if (!mainWindow) throw new Error("Main window not found");
 
-    if (mainWindow.getBrowserView()) {
-        mainWindow.removeBrowserView(appView);
+    const current = mainWindow.getBrowserView();
+    if (current !== appView) {
+        if (current) {
+            mainWindow.removeBrowserView(current);
+        }
+        mainWindow.addBrowserView(appView);
     }
-    mainWindow.addBrowserView(appView);
+    try {
+        mainWindow.setTopBrowserView(appView);
+    } catch {
+        /* API pode não existir em versões antigas */
+    }
+    resizeAppView();
 
     if (url && url !== appViewUrl) {
         const gen = ++appViewNavGeneration;
@@ -364,6 +378,7 @@ export async function showAppView(url?: string) {
             return;
         }
         appViewUrl = url;
+        resizeAppView();
     }
 
     appView.webContents.focus();

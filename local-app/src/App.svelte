@@ -20,13 +20,17 @@
             <LazyRoute path="/settings" component={Settings} delayMs={500}>Loading ...</LazyRoute>
             <LazyRoute path="/server/:id" component={Server} delayMs={500}>Loading ...</LazyRoute>
             <Route>
-                <h3>404</h3>
-                <p>No Route could be matched.</p>
+                <div class="w-full h-full bg-[#30343d] p-4 text-gray-200">
+                    <h3>404</h3>
+                    <p>No Route could be matched.</p>
+                </div>
             </Route>
         </main>
     </Router>
 {:else}
-    <main class="flex flex-grow justify-center items-center">Please open the app inside of Electron.</main>
+    <main class="flex flex-grow justify-center items-center bg-[#30343d] text-gray-200">
+        Please open the app inside of Electron.
+    </main>
 {/if}
 
 <style>
@@ -38,7 +42,9 @@
             "Open Sans", "Helvetica Neue", sans-serif;
     }
 
+    /* Transparente: no macOS/Win o BrowserView pode ficar por baixo do HTML; fundo opaco no main tapava o mapa. */
     main {
-        background-color: #30343d;
+        background-color: transparent;
+        min-height: 100%;
     }
 </style>

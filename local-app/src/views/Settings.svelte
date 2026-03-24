@@ -31,7 +31,7 @@
     }
 </script>
 
-<div class="flex flex-col w-full h-full justify-center items-center">
+<div class="flex flex-col w-full h-full justify-center items-center bg-[#30343d]">
     <h1 class="text-gray-200 text-2xl mb-6">Configurações</h1>
 
     <div class="flex flex-col justify-start max-w-148">
