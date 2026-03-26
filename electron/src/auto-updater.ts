@@ -7,11 +7,27 @@ import * as util from "util";
 
 import { APP_DISPLAY_NAME } from "./branding";
 import { createAndShowNotification } from "./notification";
+import { confirmQuit } from "./window";
 
 const sleep = util.promisify(setTimeout);
 
 let isCheckPending = false;
 let isManualRequestedUpdate = false;
+
+function sanitizeReleaseNotes(input: string): string {
+    // Algumas releases vêm com HTML/entidades e podem quebrar a acentuação no dialog.
+    return input
+        .replace(/<br\s*\/?>/gi, "\n")
+        .replace(/<\/p>/gi, "\n\n")
+        .replace(/<[^>]*>/g, "")
+        .replace(/&nbsp;/gi, " ")
+        .replace(/&amp;/gi, "&")
+        .replace(/&lt;/gi, "<")
+        .replace(/&gt;/gi, ">")
+        .replace(/\r\n/g, "\n")
+        .replace(/\n{3,}/g, "\n\n")
+        .trim();
+}
 
 export async function checkForUpdates() {
     if (isCheckPending) {
@@ -53,7 +69,7 @@ async function init() {
 
     autoUpdater.on("update-downloaded", (info: UpdateDownloadedEvent) => {
         void (async () => {
-            const notesText =
+            const rawNotesText =
                 typeof info.releaseNotes === "string"
                     ? info.releaseNotes
                     : Array.isArray(info.releaseNotes)
@@ -61,18 +77,22 @@ async function init() {
                             .map((n) => (typeof n === "string" ? n : `${n.version}: ${n.note ?? ""}`))
                             .join("\n")
                         : "";
+            const notesText = sanitizeReleaseNotes(rawNotesText);
             const dialogOpts = {
                 type: "question" as const,
                 buttons: ["Instalar e reiniciar", "Instalar depois"],
                 defaultId: 0,
                 title: `${APP_DISPLAY_NAME} — Atualização`,
-                message: notesText || info.releaseName || `Versão ${info.version}`,
-                detail: "Uma nova versão foi descarregada. Reinicie a aplicação para aplicar a atualização.",
+                message: info.releaseName || `Versão ${info.version}`,
+                detail:
+                    (notesText ? `${notesText}\n\n` : "") +
+                    "Uma nova versão foi descarregada. Reinicie a aplicação para aplicar a atualização.",
             };
 
             const { response } = await dialog.showMessageBox(dialogOpts);
             if (response === 0) {
                 await sleep(1000);
+                confirmQuit();
                 autoUpdater.quitAndInstall();
                 app.quit();
             }

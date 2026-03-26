@@ -71,7 +71,27 @@
             ]
         },
         {
-            "name": "Electron: processo principal (sem build automático)",
+            "name": "Electron: processo principal (build electron + local-app antes)",
+            "type": "node",
+            "request": "launch",
+            "cwd": "${workspaceFolder}/electron",
+            "runtimeExecutable": "${workspaceFolder}/electron/node_modules/.bin/electron",
+            "windows": {
+                "runtimeExecutable": "${workspaceFolder}/electron/node_modules/.bin/electron.cmd"
+            },
+            "args": ["dist/main.js"],
+            "outputCapture": "std",
+            "console": "integratedTerminal",
+            "preLaunchTask": "electron + local-app: build",
+            "sourceMaps": true,
+            "outFiles": ["${workspaceFolder}/electron/dist/**/*.js"],
+            "resolveSourceMapLocations": [
+                "${workspaceFolder}/electron/**",
+                "!**/node_modules/**"
+            ]
+        },
+        {
+            "name": "Electron: processo principal (sem pre-build — só dist atual)",
             "type": "node",
             "request": "launch",
             "cwd": "${workspaceFolder}/electron",
@@ -98,7 +118,7 @@
             "args": ["dist/main.js"],
             "outputCapture": "std",
             "console": "integratedTerminal",
-            "preLaunchTask": "electron: build"
+            "preLaunchTask": "electron + local-app: build"
         }
     ]
 }

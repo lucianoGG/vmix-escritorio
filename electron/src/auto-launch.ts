@@ -6,7 +6,7 @@ import { APP_DISPLAY_NAME } from "./branding";
 import settings from "./settings";
 
 export async function updateAutoLaunch() {
-    const isAutoLaunchEnabled = settings.get("auto_launch_enabled");
+    const isAutoLaunchEnabled = settings.get("auto_launch_enabled") !== false;
 
     // Don't run this in development
     if (electronIsDev) {
@@ -32,5 +32,7 @@ export async function updateAutoLaunch() {
     app.setLoginItemSettings({
         openAtLogin: isAutoLaunchEnabled,
         openAsHidden: true,
+        path: process.execPath,
+        args: [],
     });
 }

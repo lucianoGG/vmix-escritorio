@@ -1,22 +1,20 @@
 import { app, Tray, Menu } from "electron";
-import path from "path";
 import { showAboutWindow } from "electron-util";
 
 import * as autoUpdater from "./auto-updater";
 import { APP_DISPLAY_NAME } from "./branding";
+import { getAppIconPngPath } from "./app-icon";
 import * as log from "./log";
 import { confirmQuit, getAppView, getWindow } from "./window";
 
 let tray: Tray | undefined;
-
-const assetsDirectory = path.join(__dirname, "..", "assets");
 
 export function getTray() {
     return tray;
 }
 
 export function createTray() {
-    tray = new Tray(path.join(assetsDirectory, "icons", "logo.png"));
+    tray = new Tray(getAppIconPngPath());
     tray.setToolTip(APP_DISPLAY_NAME);
 
     const trayContextMenu = Menu.buildFromTemplate([
@@ -49,17 +47,27 @@ export function createTray() {
             },
         },
         {
-            label: "Abrir DevTools",
-            click() {
-                getWindow()?.webContents.openDevTools({ mode: "detach" });
-                getAppView()?.webContents.openDevTools({ mode: "detach" });
-            },
+            label: "DevTools",
+            submenu: [
+                {
+                    label: "Interface (sidebar)",
+                    click() {
+                        getWindow()?.webContents.openDevTools({ mode: "detach" });
+                    },
+                },
+                {
+                    label: "Mapa (WorkAdventure)",
+                    click() {
+                        getAppView()?.webContents.openDevTools({ mode: "detach" });
+                    },
+                },
+            ],
         },
         {
             label: "Sobre",
             click() {
                 showAboutWindow({
-                    icon: path.join(assetsDirectory, "icons", "logo.png"),
+                    icon: getAppIconPngPath(),
                     copyright: `Copyright © ${APP_DISPLAY_NAME}`,
                 });
             },

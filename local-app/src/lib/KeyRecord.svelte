@@ -143,13 +143,12 @@
     }
 </script>
 
+<svelte:window on:keyup={keyUp} />
+
 <div
     class={`flex items-center w-full h-8 border-1 rounded-md overflow-hidden text-gray-200 text-xs appearance-none focus:outline-none ${
         recording ? "border-red-500" : "border-gray-400"
     }`}
-    on:keyup={keyUp}
-    on:click={startRecording}
-    tabindex="0"
 >
     <input
         {id}
@@ -159,12 +158,18 @@
         {value}
     />
     {#if value.length > 0}
-        <span
+        <button
+            type="button"
             class="flex items-center justify-center w-4 h-4 p-2 mr-1 rounded-full cursor-pointer bg-gray-500 hover:bg-gray-400"
-            on:click|stopPropagation={resetRecording}>x</span
+            on:click|stopPropagation={resetRecording}
+            aria-label="Limpar atalho"
+        >
+            x
+        </button
         >
     {/if}
-    <div
+    <button
+        type="button"
         class={`flex h-6 items-center px-2 m-0.5 rounded-sm w-28 justify-center cursor-pointer ${
             recording ? "bg-red-500" : "hover:bg-gray-400"
         }`}
@@ -175,5 +180,5 @@
         {:else}
             <span>gravar</span>
         {/if}
-    </div>
+    </button>
 </div>

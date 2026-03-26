@@ -5,6 +5,7 @@ import { Server } from "./preload-local-app/types";
 import settings, { SettingsData } from "./settings";
 import { loadShortcuts, setShortcutsEnabled } from "./shortcuts";
 import { getAppView, hideAppView, showAppView } from "./window";
+import { updateAutoLaunch } from "./auto-launch";
 // import fetch from "node-fetch";
 
 export function emitMuteToggle() {
@@ -90,8 +91,12 @@ export default () => {
     ipcMain.handle("local-app:getSettings", (event) => settings.get() || {});
     ipcMain.handle(
         "local-app:saveSetting",
-        <T extends keyof SettingsData>(event: Electron.IpcMainInvokeEvent, key: T, value: SettingsData[T]) =>
-            settings.set(key, value)
+        async <T extends keyof SettingsData>(event: Electron.IpcMainInvokeEvent, key: T, value: SettingsData[T]) => {
+            settings.set(key, value);
+            if (key === "auto_launch_enabled") {
+                await updateAutoLaunch();
+            }
+        }
     );
 
     ipcMain.handle("local-app:setShortcutsEnabled", (event, enabled: boolean) => setShortcutsEnabled(enabled));

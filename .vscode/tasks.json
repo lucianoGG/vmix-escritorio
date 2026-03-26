@@ -14,8 +14,9 @@
                 "isDefault": false
             },
             "presentation": {
-                "reveal": "silent",
-                "panel": "shared"
+                "reveal": "always",
+                "panel": "shared",
+                "showReuseMessage": false
             },
             "problemMatcher": []
         },
@@ -28,8 +29,9 @@
             },
             "group": "build",
             "presentation": {
-                "reveal": "silent",
-                "panel": "shared"
+                "reveal": "always",
+                "panel": "shared",
+                "showReuseMessage": false
             },
             "problemMatcher": []
         },
@@ -42,8 +44,9 @@
             },
             "group": "build",
             "presentation": {
-                "reveal": "silent",
-                "panel": "shared"
+                "reveal": "always",
+                "panel": "shared",
+                "showReuseMessage": false
             },
             "problemMatcher": []
         },
@@ -52,6 +55,11 @@
             "dependsOn": ["local-app: build", "electron: build"],
             "dependsOrder": "sequence",
             "group": "build",
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared",
+                "showReuseMessage": false
+            },
             "problemMatcher": []
         },
         {

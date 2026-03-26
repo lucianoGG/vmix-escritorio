@@ -1,4 +1,4 @@
-import { app, BrowserWindow, globalShortcut, systemPreferences } from "electron";
+import { app, BrowserWindow, globalShortcut, session, systemPreferences } from "electron";
 
 import { createWindow, getWindow } from "./window";
 import { createTray } from "./tray";
@@ -10,6 +10,8 @@ import { setLogLevel } from "./log";
 import { APP_DISPLAY_NAME } from "./branding";
 import "./serve"; // prepare custom url scheme
 import { loadShortcuts } from "./shortcuts";
+
+const WORKADVENTURE_SESSION_PARTITION = "persist:vmix-workadventure";
 
 async function init() {
     // Garante o nome correto do app nas integrações do sistema (notificações, etc).
@@ -96,6 +98,11 @@ async function init() {
     });
 
     app.on("will-quit", () => {
+        const ses = session.fromPartition(WORKADVENTURE_SESSION_PARTITION);
+        void ses.cookies.flushStore().catch(() => {
+            /* noop */
+        });
+        ses.flushStorageData();
         globalShortcut.unregisterAll();
     });
 }

@@ -1,11 +1,13 @@
 import { BrowserView, BrowserWindow, desktopCapturer, dialog, ipcMain, session } from "electron";
 import electronIsDev from "electron-is-dev";
+import log from "electron-log";
 import windowStateKeeper from "electron-window-state";
 import path from "path";
 import { APP_DISPLAY_NAME } from "./branding";
 import { loadCustomScheme } from "./serve";
 
 const WORKADVENTURE_SESSION_PARTITION = "persist:vmix-workadventure";
+const forceInputDebug = process.env.VMIX_INPUT_DEBUG === "1";
 
 let mainWindow: BrowserWindow | undefined;
 let appView: BrowserView | undefined;
@@ -14,6 +16,11 @@ let appViewUrl = "";
 let appViewNavGeneration = 0;
 /** Utilizador escolheu "Fechar" no diálogo; permitir fechar sem voltar a perguntar. */
 let quitConfirmed = false;
+let lastInputDebugAt = 0;
+
+function getWorkAdventureSession() {
+    return session.fromPartition(WORKADVENTURE_SESSION_PARTITION);
+}
 
 function isErrAborted(err: unknown): boolean {
     return (
@@ -26,12 +33,72 @@ function isErrAborted(err: unknown): boolean {
 
 const sidebarWidth = 80;
 
+/** Evita que a barra de rolagem fique “cortada” no limite direito do BrowserView. */
+const APP_VIEW_SCROLL_GUTTER_PX = 2;
+
+/** Reforço vindo do processo principal (além do preload); só scrollbar, sem mexer em overflow do jogo. */
+const WORKADVENTURE_SCROLLBAR_CSS = `
+*::-webkit-scrollbar {
+  -webkit-appearance: none !important;
+  width: 10px !important;
+  height: 10px !important;
+}
+*::-webkit-scrollbar-thumb {
+  min-height: 24px !important;
+  border-radius: 8px !important;
+  border: 2px solid transparent !important;
+  background-clip: padding-box !important;
+  background-color: rgba(127, 127, 127, 0.55) !important;
+}
+*::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.12) !important;
+}
+/* EntityEditor (#map-editor-right): flex + overflow-auto precisa de min-height:0 no WebKit (Electron). */
+#map-editor-right .overflow-auto {
+  min-height: 0 !important;
+}
+`;
+
+let workAdventureScrollbarCssKey: string | undefined;
+
 export function getWindow() {
     return mainWindow;
 }
 
 export function getAppView() {
     return appView;
+}
+
+function isAppViewVisible(): boolean {
+    if (!mainWindow || !appView) return false;
+    return mainWindow.getBrowserView() === appView;
+}
+
+function focusAppViewIfVisible(): void {
+    if (!isAppViewVisible() || !appView) return;
+    appView.webContents.focus();
+}
+
+function ensureAppViewInputFocus(_event: Electron.Event, input: Electron.Input) {
+    if (!isAppViewVisible() || !appView) return;
+    // Só teclado: refocar em cada mouseWheel quebra o scroll em painéis com overflow-auto
+    // (ex.: lista Custom no #map-editor-right), porque focus() no webContents desvia a roda.
+    if (input.type !== "keyDown") return;
+
+    const now = Date.now();
+    if (now - lastInputDebugAt > 200) {
+        const message = `[vmix][input-focus] before-input-event type=${input.type} visible=${String(isAppViewVisible())}`;
+        if (forceInputDebug) {
+            log.info(message);
+        } else {
+            log.debug(message);
+        }
+        lastInputDebugAt = now;
+    }
+
+    // Em alguns cenários no macOS, o foco de input volta para o webContents
+    // da janela base. Reforçamos o foco do BrowserView para WASD.
+    appView.webContents.focus();
 }
 
 /** Marca que o utilizador confirmou o encerramento (ex.: Quit no tray). Usado para evitar o diálogo. */
@@ -45,7 +112,7 @@ export function confirmQuit(): void {
  * e a sessão deve liberar as permissões de media/display-capture.
  */
 function configureWorkAdventureSession(): void {
-    const ses = session.fromPartition(WORKADVENTURE_SESSION_PARTITION);
+    const ses = getWorkAdventureSession();
 
     // Libera permissões necessárias para media e display capture
     ses.setPermissionRequestHandler((_webContents, permission, callback) => {
@@ -235,7 +302,7 @@ function resizeAppView(): void {
     }
     // Área de cliente (sem moldura). getBounds() inclui moldura e erra no macOS.
     const [cw, ch] = mainWindow.getContentSize();
-    const width = Math.max(1, cw - sidebarWidth);
+    const width = Math.max(1, cw - sidebarWidth - APP_VIEW_SCROLL_GUTTER_PX);
     const height = Math.max(1, ch);
     appView.setBounds({ x: sidebarWidth, y: 0, width, height });
 }
@@ -299,6 +366,7 @@ export async function createWindow() {
         webPreferences: {
             preload: path.resolve(__dirname, "..", "dist", "preload-app", "preload.js"),
             partition: WORKADVENTURE_SESSION_PARTITION,
+            session: getWorkAdventureSession(),
             contextIsolation: true,
             nodeIntegration: false,
             // Electron 18: sandbox false é necessário para o preload funcionar com ipcRenderer
@@ -317,9 +385,30 @@ export async function createWindow() {
     });
 
     mainWindow.on("show", resizeAppView);
+    mainWindow.on("show", focusAppViewIfVisible);
+    mainWindow.on("focus", focusAppViewIfVisible);
+    mainWindow.on("restore", focusAppViewIfVisible);
+    mainWindow.webContents.on("before-input-event", ensureAppViewInputFocus);
 
     appView.webContents.on("did-finish-load", () => {
-        resizeAppView();
+        void (async () => {
+            resizeAppView();
+            focusAppViewIfVisible();
+            if (!appView) return;
+            if (workAdventureScrollbarCssKey) {
+                try {
+                    await appView.webContents.removeInsertedCSS(workAdventureScrollbarCssKey);
+                } catch {
+                    /* noop */
+                }
+                workAdventureScrollbarCssKey = undefined;
+            }
+            try {
+                workAdventureScrollbarCssKey = await appView.webContents.insertCSS(WORKADVENTURE_SCROLLBAR_CSS);
+            } catch {
+                /* noop */
+            }
+        })();
     });
 
     mainWindow.webContents.on("did-finish-load", () => {
@@ -352,15 +441,7 @@ export async function showAppView(url?: string) {
 
     const current = mainWindow.getBrowserView();
     if (current !== appView) {
-        if (current) {
-            mainWindow.removeBrowserView(current);
-        }
-        mainWindow.addBrowserView(appView);
-    }
-    try {
-        mainWindow.setTopBrowserView(appView);
-    } catch {
-        /* API pode não existir em versões antigas */
+        mainWindow.setBrowserView(appView);
     }
     resizeAppView();
 
@@ -387,5 +468,7 @@ export async function showAppView(url?: string) {
 export function hideAppView() {
     if (!appView) throw new Error("App view not found");
     if (!mainWindow) throw new Error("Main window not found");
-    mainWindow.removeBrowserView(appView);
+    if (mainWindow.getBrowserView() === appView) {
+        mainWindow.removeBrowserView(appView);
+    }
 }

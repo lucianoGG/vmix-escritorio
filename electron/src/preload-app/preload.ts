@@ -15,8 +15,42 @@ const api: WorkAdventureDesktopApi = {
 
 contextBridge.exposeInMainWorld("WAD", api);
 
+function injectDesktopScrollbarStyles(): void {
+    const id = "vmix-desktop-scrollbar-styles";
+    if (document.getElementById(id)) {
+        return;
+    }
+    const style = document.createElement("style");
+    style.id = id;
+    style.textContent = `
+        html {
+            scrollbar-gutter: stable;
+        }
+        *::-webkit-scrollbar {
+            -webkit-appearance: none;
+            width: 10px;
+            height: 10px;
+        }
+        *::-webkit-scrollbar-thumb {
+            min-height: 24px;
+            border-radius: 8px;
+            border: 2px solid transparent;
+            background-clip: padding-box;
+            background-color: rgba(127, 127, 127, 0.55);
+        }
+        *::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.12);
+        }
+        #map-editor-right .overflow-auto {
+            min-height: 0 !important;
+        }
+    `;
+    document.documentElement.appendChild(style);
+}
+
 // Sobrescreve getDisplayMedia antes do WorkAdventure carregar
 window.addEventListener("DOMContentLoaded", () => {
+    injectDesktopScrollbarStyles();
     const script = document.createElement("script");
     script.textContent = `
         (function () {
